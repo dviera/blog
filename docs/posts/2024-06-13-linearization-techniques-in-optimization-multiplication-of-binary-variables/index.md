@@ -1,0 +1,141 @@
+---
+title: "Linearization Techniques in Optimization: Multiplication of Binary Variables"
+description: |
+  Linearization technique for the multiplication of binary variables [@asghari2022transformation].
+author:
+  - name: D.G.
+date: 2024-06-13
+output:
+  distill::distill_article:
+    keep_md: true
+    self_contained: false
+draft: false
+bibliography: ../../biblio.bib
+
+---
+
+Consider two binary variables $x_i$ with $i \in \{1,...,m\}$ and $y_j$
+with $j \in \{1,...,n\}$. To linearize the term $x_i·y_j$, which results
+from multiplying the binary variables, we replace it with an additional
+binary variable:
+
+$$z_{ij} = x_i·y_j, \forall i \in \{1,...,m\}, \forall j \in \{1,...,n\}$$.
+
+The model including the non-linear term can be linearized by adding some
+new constraints as follows:
+
+$$z_{i_j} ≤ x_i, ∀i ∈ \{1,...,m\}, ∀j ∈ {\{1,...,n}\}\tag{1}$$
+$$z_{ij} ≤ y_j, ∀i ∈ \{1,...,m\}, ∀j ∈ {\{1,...,n}\}\tag{2}$$
+$$z_{ij} ≥ x_i + y_j − 1, ∀i ∈ \{1,...,m\}, ∀j ∈ {\{1,...,n}\} \tag{3}$$
+$$z_{ij} ∈ {0, 1}, ∀i ∈ \{1,...,m\}, ∀j ∈ {\{1,...,n}\}\tag{4}$$
+
+### Application: Quadratic Assignment Problem [@nahmias2015production]
+
+The problem is to assign machines to locations. It could be to assign other types of facilities to locations. This problem, unlike the simple assignment problem, is that where I assign one facility will have an impact on the others because there are interactions between facilities such as the number of materials handling trips and the cost of making those trips. We would like to put close facilities that have a lot of interactions.
+
+#### Model
+
+\begin{align*}
+
+&\text{$n$ = number of machines;}\\
+
+&\text{$d_{jr}$ = cost of making a single materials handling trip from location $j$ to location $r$;}\\
+
+&\text{$f_{ik}$ = mean number of trips per time period from machine $i$ to machine $k$;}\\
+
+&x_{ij} = 
+\begin{cases}
+      1 & \text{if machine $i$ is assigned to location $j$}\\
+      0 & \text{otherwise}
+\end{cases}  
+    
+\end{align*}
+
+
+\begin{align}
+
+\sum_{i=1}^n \sum_{j=1}^n \sum_{k=1}^n \sum_{r=1}^n f_{ik} · d_{jr} · x_{ij} · x_{kr}
+
+\\
+
+\sum_{i=1}^n x_{ij} = 1,  \forall j = 1,...,n
+
+\\
+
+\sum_{j=1}^n x_{ij} = 1,  \forall i = 1,...,n
+
+\\
+x_{ij} \space\space binary, \forall i = 1,...,n \space\space and \space\space \forall j = 1,...,n
+
+\end{align}
+
+#### Implementation in Julia
+
+Example 10.20 from [@tompkins2010facilities].
+
+
+<div class="layout-chunk" data-layout="l-body">
+
+``` julia
+
+using JuMP
+using CPLEX
+# using GLPK
+
+flow = [0 5 2 0
+    0 0 2 3
+    3 4 0 0
+    0 0 5 0]
+
+distance = [0 5 10 4
+    4 0 6 7
+    8 5 0 5
+    6 6 5 0]
+
+nbFac, nbLoc = size(flow)
+
+model = Model(CPLEX.Optimizer)
+# model = Model(GLPK.Optimizer)
+
+@variable(model, x[1:nbFac, 1:nbLoc], Bin)
+
+# New binary variable to linearize
+@variable(model, z[1:nbFac, 1:nbLoc, 1:nbFac, 1:nbLoc], Bin)
+
+for j in 1:nbLoc
+    @constraint(model, sum(x[i, j] for i in 1:nbFac) == 1)
+end
+
+for i in 1:nbFac
+    @constraint(model, sum(x[i, j] for j in 1:nbLoc) == 1)
+end
+
+# Added constraints to linearize
+for i in 1:nbFac
+    for j in 1:nbLoc
+        for k in 1:nbFac
+            for r in 1:nbLoc
+                @constraint(model, z[i, j, k, r] <= x[i, j])
+                @constraint(model, z[i, j, k, r] <= x[k, r])
+                @constraint(model, z[i, j, k, r] >= x[i, j] + x[k, r] - 1)
+            end
+        end
+    end
+end
+
+@objective(model, Min, sum(flow[i, k] * distance[j, r] * z[i, j, k, r] for i = 1:nbFac for j = 1:nbLoc for k = 1:nbFac for r = 1:nbLoc))
+
+print(model)
+
+optimize!(model)
+
+objective_value(model)
+
+value.(x)
+
+```
+
+</div>
+
+```{.r .distill-force-highlighting-css}
+```
