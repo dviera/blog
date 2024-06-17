@@ -29,12 +29,12 @@ A single layer perceptron with one neuron that receives a 2-dimensional array as
    - Input: A 2D array \(\mathbf{X}\) of shape \((m, n)\), where \(m\) is the number of alternatives and \(n\) is the number of features.
    - Example Input: \(\mathbf{X} = \begin{bmatrix} x_{11} & x_{12} & \cdots & x_{1n} \\ x_{21} & x_{22} & \cdots & x_{2n} \\ \vdots & \vdots & \ddots & \vdots \\ x_{m1} & x_{m2} & \cdots & x_{mn} \end{bmatrix}\)
 
-2. **Weights and Bias**:
+2. **Weights**:
    - Weight vector \(\mathbf{w}\) of size \(n \times 1\).
 
 3. **Single Neuron Computation**:
-   - For each alternative \(i\), the input \(\mathbf{x}_i\) (a row of the matrix \(\mathbf{X}\)) is used to compute the weighted sum plus bias:
-     \[ z_i = \mathbf{x}_i \mathbf{w} + b \]
+   - For each alternative \(i\), the input \(\mathbf{x}_i\) (a row of the matrix \(\mathbf{X}\)) is used to compute the weighted sum:
+     \[ z_i = \mathbf{x}_i \mathbf{w}\]
    - Here, \(\mathbf{x}_i\) is \(1 \times n\) and \(\mathbf{w}\) is \(n \times 1\), resulting in \(z_i\) being a scalar.
 
 4. **Softmax Activation**:
