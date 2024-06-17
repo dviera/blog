@@ -2191,14 +2191,14 @@ document.addEventListener('DOMContentLoaded', function() {
 <li>Input: A 2D array <span class="math inline">\(\mathbf{X}\)</span> of shape <span class="math inline">\((m, n)\)</span>, where <span class="math inline">\(m\)</span> is the number of alternatives and <span class="math inline">\(n\)</span> is the number of features.</li>
 <li>Example Input: <span class="math inline">\(\mathbf{X} = \begin{bmatrix} x_{11} &amp; x_{12} &amp; \cdots &amp; x_{1n} \\ x_{21} &amp; x_{22} &amp; \cdots &amp; x_{2n} \\ \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\ x_{m1} &amp; x_{m2} &amp; \cdots &amp; x_{mn} \end{bmatrix}\)</span></li>
 </ul></li>
-<li><strong>Weights and Bias</strong>:
+<li><strong>Weights</strong>:
 <ul>
 <li>Weight vector <span class="math inline">\(\mathbf{w}\)</span> of size <span class="math inline">\(n \times 1\)</span>.</li>
 </ul></li>
 <li><strong>Single Neuron Computation</strong>:
 <ul>
-<li>For each alternative <span class="math inline">\(i\)</span>, the input <span class="math inline">\(\mathbf{x}_i\)</span> (a row of the matrix <span class="math inline">\(\mathbf{X}\)</span>) is used to compute the weighted sum plus bias:
-<span class="math display">\[ z_i = \mathbf{x}_i \mathbf{w} + b \]</span></li>
+<li>For each alternative <span class="math inline">\(i\)</span>, the input <span class="math inline">\(\mathbf{x}_i\)</span> (a row of the matrix <span class="math inline">\(\mathbf{X}\)</span>) is used to compute the weighted sum:
+<span class="math display">\[ z_i = \mathbf{x}_i \mathbf{w}\]</span></li>
 <li>Here, <span class="math inline">\(\mathbf{x}_i\)</span> is <span class="math inline">\(1 \times n\)</span> and <span class="math inline">\(\mathbf{w}\)</span> is <span class="math inline">\(n \times 1\)</span>, resulting in <span class="math inline">\(z_i\)</span> being a scalar.</li>
 </ul></li>
 <li><strong>Softmax Activation</strong>:
