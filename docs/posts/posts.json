@@ -1,5 +1,22 @@
 [
   {
+    "path": "posts/2024-06-27-calibration-curve/",
+    "title": "Calibration Curve",
+    "description": "Probabilities can be much more informative than labels.",
+    "author": [
+      {
+        "name": "D.G.",
+        "url": {}
+      }
+    ],
+    "date": "2024-06-27",
+    "categories": [],
+    "contents": "\r\nThe model predicts that you do not have cancer vs. The model predicts you are 49% likely to have cancer. I would be worry with the latter rather than the former.\r\nWe compare the actual probability vs. predicted probability. To calculate those probabilities we first create bins between 0 and 1. For each bin we assign the predicted probabilities to each bin and calculate the mean of them. Once assigned, we know the true labels of those probabilities and we calculate the mean of them for each bin. This is our actual probabilities.\r\n\r\nimport numpy as np\r\nimport matplotlib.pyplot as plt\r\nfrom sklearn.linear_model import LogisticRegression\r\nfrom sklearn.model_selection import train_test_split\r\nfrom sklearn.datasets import fetch_covtype\r\n\r\n# Load the dataset\r\ndata = fetch_covtype(download_if_missing=True)\r\nX = data.data\r\ny = (data.target == 1).astype(int)  # Make it a binary classification problem\r\n\r\n# Split the data into training and testing sets\r\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)\r\n\r\n# Train a logistic regression model using sklearn\r\nmodel = LogisticRegression(max_iter=10000)\r\nmodel.fit(X_train, y_train)\r\nLogisticRegression(max_iter=10000)In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.LogisticRegressionLogisticRegression(max_iter=10000)\r\n\r\n# Predict probabilities\r\nprobabilities = model.predict_proba(X_test)[:, 1]\r\n\r\nCalculate the predicted probabilities in each bin:\r\n\r\nimport pandas as pd\r\n\r\nn_bins = 5\r\nbins = np.linspace(0, 1, n_bins + 1)\r\npredicted = pd.DataFrame({'pred': probabilities, 'bins_idx':np.digitize(probabilities, bins)}).groupby('bins_idx').agg('mean')\r\n\r\npredicted\r\n              pred\r\nbins_idx          \r\n1         0.077440\r\n2         0.299023\r\n3         0.501409\r\n4         0.691401\r\n5         0.868659\r\n\r\nCalculate the actual probabilities:\r\n\r\nactual = pd.DataFrame({'actual': y_test, 'bins_idx':np.digitize(probabilities, bins)}).groupby('bins_idx').agg('mean')\r\n\r\nactual\r\n            actual\r\nbins_idx          \r\n1         0.065506\r\n2         0.298689\r\n3         0.552583\r\n4         0.691578\r\n5         0.786157\r\n\r\nPlot the calibration curve and compare with the sklearn implementation:\r\n\r\nfrom sklearn.calibration import calibration_curve\r\n\r\nfraction_of_positives, mean_predicted_value = calibration_curve(y_test, probabilities, n_bins=n_bins)\r\n\r\nplt.figure(figsize=(8, 6))\r\nplt.plot([0, 1], [0, 1], \"k:\", label=\"Perfectly calibrated\")\r\nplt.plot(mean_predicted_value, fraction_of_positives, \"o-\", label=\"sklearn\", c = \"#3255a4\")\r\nplt.plot(predicted['pred'], actual['actual'], \"s--\", label=\"from scratch\", c = \"#ff2d21\")\r\nplt.xlabel(\"Predicted probability\")\r\nplt.ylabel(\"Actual probability\")\r\nplt.title(\"Calibration curve\")\r\nplt.legend()\r\nplt.show()\r\n\r\n\r\n\r\n\r\n\r\n",
+    "preview": "posts/2024-06-27-calibration-curve/calibration-curve_files/figure-html5/unnamed-chunk-4-1.png",
+    "last_modified": "2024-06-27T21:44:35-04:00",
+    "input_file": "calibration-curve.knit.md"
+  },
+  {
     "path": "posts/2024-06-15-single-layer-perceptron-for-discrete-choice-model/",
     "title": "Single Layer Perceptron for Discrete Choice Model",
     "description": "Using a single layer perceptron to calculate the coefficients of a choice model and the willingness to pay. Compare the results with the Multinomial Logit Model.",

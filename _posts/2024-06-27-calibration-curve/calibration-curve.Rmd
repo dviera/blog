@@ -1,0 +1,84 @@
+---
+title: "Calibration Curve"
+description: |
+  Probabilities can be much more informative than labels.
+author:
+  - name: D.G.
+    url: {}
+date: 2024-06-27
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+The model predicts that you do not have cancer vs. The model predicts you are 49% likely to have cancer. I would be worry with the latter rather than the former.
+
+We compare the actual probability vs. predicted probability. To calculate those probabilities we first create bins between 0 and 1. For each bin we assign the predicted probabilities to each bin and calculate the mean of them. Once assigned, we know the true labels of those probabilities and we calculate the mean of them for each bin. This is our actual probabilities.
+
+```{python eval=TRUE}
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import fetch_covtype
+
+# Load the dataset
+data = fetch_covtype(download_if_missing=True)
+X = data.data
+y = (data.target == 1).astype(int)  # Make it a binary classification problem
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train a logistic regression model using sklearn
+model = LogisticRegression(max_iter=10000)
+model.fit(X_train, y_train)
+
+# Predict probabilities
+probabilities = model.predict_proba(X_test)[:, 1]
+```
+
+Calculate the predicted probabilities in each bin:
+
+```{python eval=TRUE}
+import pandas as pd
+
+n_bins = 5
+bins = np.linspace(0, 1, n_bins + 1)
+predicted = pd.DataFrame({'pred': probabilities, 'bins_idx':np.digitize(probabilities, bins)}).groupby('bins_idx').agg('mean')
+
+predicted
+
+```
+Calculate the actual probabilities:
+
+```{python eval=TRUE}
+
+actual = pd.DataFrame({'actual': y_test, 'bins_idx':np.digitize(probabilities, bins)}).groupby('bins_idx').agg('mean')
+
+actual
+
+```
+Plot the calibration curve and compare with the sklearn implementation:
+
+```{python eval=TRUE}
+
+from sklearn.calibration import calibration_curve
+
+fraction_of_positives, mean_predicted_value = calibration_curve(y_test, probabilities, n_bins=n_bins)
+
+plt.figure(figsize=(8, 6))
+plt.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
+plt.plot(mean_predicted_value, fraction_of_positives, "o-", label="sklearn", c = "#3255a4")
+plt.plot(predicted['pred'], actual['actual'], "s--", label="from scratch", c = "#ff2d21")
+plt.xlabel("Predicted probability")
+plt.ylabel("Actual probability")
+plt.title("Calibration curve")
+plt.legend()
+plt.show()
+
+
+```
+
+
